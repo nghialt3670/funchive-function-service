@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: funchive-function-service
+  config:
+    import: configserver:${FUNCHIVE_CONFIG_SERVER_URL:http://localhost:8888}

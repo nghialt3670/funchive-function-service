@@ -6,7 +6,6 @@ import com.funchive.functionservice.function.model.document.Implementation;
 import lombok.Data;
 
 import java.time.Instant;
-import java.util.List;
 
 @Data
 public class FunctionDetailDto {

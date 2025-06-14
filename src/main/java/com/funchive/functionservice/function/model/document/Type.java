@@ -1,10 +1,12 @@
 package com.funchive.functionservice.function.model.document;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.funchive.functionservice.function.model.document.type.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @JsonSubTypes({
         @JsonSubTypes.Type(value = ArrayType.class, name = "ARRAY"),
@@ -20,12 +22,17 @@ import lombok.Data;
         visible = true
 )
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public abstract class Type {
-    private final String name;
-    private final String description = "";
-    private final Value<?> defaultValue = null;
+    @JsonIgnore
+    private String name;
+    private String description;
+    private Value<?> defaultValue;
 
     public Type(String name) {
         this.name = name;
+        this.description = "";
+        this.defaultValue = null;
     }
 }

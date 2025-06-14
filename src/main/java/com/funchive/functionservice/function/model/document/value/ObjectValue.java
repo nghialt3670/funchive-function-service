@@ -1,7 +1,6 @@
 package com.funchive.functionservice.function.model.document.value;
 
 import com.funchive.functionservice.function.model.document.Value;
-import com.funchive.functionservice.function.model.document.type.ObjectType;
 import lombok.Getter;
 
 import java.util.Map;

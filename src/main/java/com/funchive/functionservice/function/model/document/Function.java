@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.Instant;
 
 @Data
-@Document("users")
+@Document("functions")
 public class Function {
     @Id
     private String id;

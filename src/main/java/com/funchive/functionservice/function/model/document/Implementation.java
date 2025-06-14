@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
-        property = "dockersandboxstrategy",
+        property = "language",
         visible = true
 )
 @JsonSubTypes({

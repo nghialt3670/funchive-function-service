@@ -2,14 +2,16 @@ package com.funchive.functionservice.function.controller;
 
 import com.funchive.functionservice.common.model.dto.ResponseBody;
 import com.funchive.functionservice.common.model.dto.ResponsePage;
-import com.funchive.functionservice.function.SandboxService;
 import com.funchive.functionservice.function.FunctionService;
-import com.funchive.functionservice.function.model.dto.FunctionFilter;
+import com.funchive.functionservice.function.SandboxService;
 import com.funchive.functionservice.function.model.document.Value;
-import com.funchive.functionservice.function.model.dto.*;
+import com.funchive.functionservice.function.model.dto.FunctionCreateDto;
+import com.funchive.functionservice.function.model.dto.FunctionDetailDto;
+import com.funchive.functionservice.function.model.dto.FunctionFilter;
+import com.funchive.functionservice.function.model.dto.FunctionUpdateDto;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.lang.ObjectUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,8 +28,8 @@ public class FunctionController {
 
     @PostMapping
     public ResponseBody<FunctionDetailDto> createFunction(
-        @RequestParam boolean compile,
-        @RequestBody FunctionCreateDto functionCreateDto
+            @RequestParam boolean compile,
+            @RequestBody FunctionCreateDto functionCreateDto
     ) {
         var createdFunctionDetailDto = functionService.createFunction(functionCreateDto);
 
@@ -62,9 +64,9 @@ public class FunctionController {
 
     @PutMapping("/{functionId}")
     public ResponseBody<FunctionDetailDto> updateFunction(
-        @PathVariable String functionId,
-        @RequestParam boolean compile,
-        @RequestBody FunctionUpdateDto functionUpdateDto
+            @PathVariable String functionId,
+            @RequestParam boolean compile,
+            @RequestBody FunctionUpdateDto functionUpdateDto
     ) {
         var updatedFunctionDetailDto = functionService.updateFunction(functionId, functionUpdateDto);
 
@@ -82,23 +84,25 @@ public class FunctionController {
     }
 
     @PostMapping("/{functionId}/compile")
-    public ResponseBody<CompilationResultDto> compileFunction(
+    public ResponseBody<ObjectUtils.Null> compileFunction(
             @PathVariable String functionId
     ) {
         var functionDetailDto = functionService.getFunctionDetail(functionId);
-        var compilationResultDto = sandboxService.compileFunction(functionDetailDto);
 
-        return ResponseBody.of(compilationResultDto);
+        sandboxService.compileFunction(functionDetailDto);
+
+        return ResponseBody.of(null);
     }
 
     @PostMapping("/{functionId}/execute")
-    public ResponseBody<ExecutionResultDto> executeFunction(
+    public ResponseBody<ObjectUtils.Null> executeFunction(
             @PathVariable String functionId,
             @RequestBody List<Value<?>> inputs
     ) {
         var functionDetailDto = functionService.getFunctionDetail(functionId);
-        var executionResultDto = sandboxService.executeFunction(functionDetailDto);
 
-        return ResponseBody.of(executionResultDto);
+        sandboxService.executeFunction(functionDetailDto);
+
+        return ResponseBody.of(null);
     }
 }

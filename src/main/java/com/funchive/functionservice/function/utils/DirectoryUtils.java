@@ -19,12 +19,12 @@ public class DirectoryUtils {
     public static void removeDirectory(Path directoryPath) {
         try (var paths = Files.walk(directoryPath)) {
             paths.map(Path::toFile)
-                 .sorted((a, b) -> -a.compareTo(b))
-                 .forEach(file -> {
-                     if (!file.delete()) {
-                         log.warn("Failed to delete file or directory: {}", file.getAbsolutePath());
-                     }
-                 });
+                    .sorted((a, b) -> -a.compareTo(b))
+                    .forEach(file -> {
+                        if (!file.delete()) {
+                            log.warn("Failed to delete file or directory: {}", file.getAbsolutePath());
+                        }
+                    });
         } catch (IOException e) {
             log.error("Failed to cleanup temporary directory: {}", directoryPath, e);
         }

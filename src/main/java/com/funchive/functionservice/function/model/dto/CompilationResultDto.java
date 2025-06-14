@@ -6,7 +6,6 @@ import lombok.Data;
 @Builder
 @Data
 public class CompilationResultDto {
-    private Boolean success;
+    private boolean success;
     private int duration;
-    private FileDto file;
 }

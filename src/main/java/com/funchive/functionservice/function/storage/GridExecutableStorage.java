@@ -13,10 +13,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class GridExecutableStorage implements ExecutableStorage
-{
-    private final MongoTemplate mongoTemplate;
+public class GridExecutableStorage implements ExecutableStorage {
     private static final String BUCKET_NAME = "executables";
+    private final MongoTemplate mongoTemplate;
 
     private GridFSBucket getGridFSBucket() {
         return GridFSBuckets.create(mongoTemplate.getDb(), BUCKET_NAME);

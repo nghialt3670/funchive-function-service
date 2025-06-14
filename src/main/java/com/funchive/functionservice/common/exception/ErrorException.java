@@ -8,25 +8,21 @@ import java.util.function.Supplier;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public final class ErrorException extends RuntimeException
-{
+public final class ErrorException extends RuntimeException {
     private final Instant timestamp;
     private final Error error;
 
-    public ErrorException(Error error)
-    {
+    public ErrorException(Error error) {
         super(error.getMessage());
         this.error = error;
         timestamp = Instant.now();
     }
 
-    public static ErrorException of(Error error)
-    {
+    public static ErrorException of(Error error) {
         return new ErrorException(error);
     }
 
-    public static Supplier<ErrorException> supplierOf(Error error)
-    {
+    public static Supplier<ErrorException> supplierOf(Error error) {
         return () -> new ErrorException(error);
     }
 }

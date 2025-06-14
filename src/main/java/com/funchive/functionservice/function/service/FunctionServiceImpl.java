@@ -3,11 +3,11 @@ package com.funchive.functionservice.function.service;
 import com.funchive.functionservice.function.FunctionRepository;
 import com.funchive.functionservice.function.FunctionService;
 import com.funchive.functionservice.function.exception.FunctionNotFoundException;
-import com.funchive.functionservice.function.model.dto.FunctionFilter;
 import com.funchive.functionservice.function.model.document.CompilationStatus;
 import com.funchive.functionservice.function.model.document.Function;
 import com.funchive.functionservice.function.model.dto.FunctionCreateDto;
 import com.funchive.functionservice.function.model.dto.FunctionDetailDto;
+import com.funchive.functionservice.function.model.dto.FunctionFilter;
 import com.funchive.functionservice.function.model.dto.FunctionUpdateDto;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -103,6 +103,7 @@ public class FunctionServiceImpl implements FunctionService {
     }
 
     @Override
+    @Transactional
     public FunctionDetailDto updateCompilationStatus(String functionId, CompilationStatus compilationStatus) {
         var function = findFunctionById(functionId);
         function.setCompilationStatus(compilationStatus);
@@ -119,6 +120,7 @@ public class FunctionServiceImpl implements FunctionService {
     private FunctionDetailDto toFunctionDetailDto(Function function) {
         var functionDetailDto = new FunctionDetailDto();
 
+        functionDetailDto.setId(function.getId());
         functionDetailDto.setDefinition(function.getDefinition());
         functionDetailDto.setImplementation(function.getImplementation());
         functionDetailDto.setCompilationStatus(function.getCompilationStatus());

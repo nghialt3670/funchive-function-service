@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @Getter
 public final class NumberType extends Type {
+    // Default constructor for Jackson
     public NumberType() {
         super("NUMBER");
     }

@@ -7,11 +7,13 @@ import com.funchive.functionservice.function.SandboxService;
 import com.funchive.functionservice.function.model.dto.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.ObjectUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 
+@Slf4j
 @Tag(name = "Function API")
 @RestController
 @RequestMapping("/functions")
@@ -74,6 +76,13 @@ public class FunctionController {
     @DeleteMapping("/{functionId}")
     public ResponseBody<FunctionDetailDto> deleteFunction(@PathVariable String functionId) {
         var deletedFunctionDetailDto = functionService.deleteFunction(functionId);
+
+        try {
+            sandboxService.deleteFunctionExecutable(deletedFunctionDetailDto);
+        } catch (Exception e) {
+            log.warn("Failed to delete executable");
+        }
+
         return ResponseBody.of(deletedFunctionDetailDto);
     }
 

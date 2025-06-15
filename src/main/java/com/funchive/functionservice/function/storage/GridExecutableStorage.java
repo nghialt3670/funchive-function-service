@@ -40,34 +40,21 @@ public class GridExecutableStorage implements ExecutableStorage {
 
     @Override
     public FileDto loadExecutable(String fileId) {
-        try {
-            var gridFSFile = getGridFSBucket().find(new Document("filename", fileId)).first();
-            if (gridFSFile == null) {
-                throw new RuntimeException("Executable not found with ID: " + fileId);
-            }
-
-            FileDto fileDto = new FileDto();
-            fileDto.setFileStream(getGridFSBucket().openDownloadStream(fileId));
-
-            // Set metadata from GridFS
-            var metadata = gridFSFile.getMetadata();
-            if (metadata != null) {
-                fileDto.setMimeType(metadata.getString("contentType"));
-                fileDto.setFilename(metadata.getString("originalFilename"));
-            }
-
-            // Fallback if no metadata
-            if (fileDto.getFilename() == null) {
-                fileDto.setFilename("main_executable");
-            }
-            if (fileDto.getMimeType() == null) {
-                fileDto.setMimeType("application/octet-stream");
-            }
-
-            return fileDto;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to retrieve executable with ID: " + fileId, e);
+        var gridFSFile = getGridFSBucket().find(new Document("filename", fileId)).first();
+        if (gridFSFile == null) {
+            throw new RuntimeException("Executable not found with ID: " + fileId);
         }
+
+        FileDto fileDto = new FileDto();
+        fileDto.setFileStream(getGridFSBucket().openDownloadStream(fileId));
+
+        var metadata = gridFSFile.getMetadata();
+        if (metadata != null) {
+            fileDto.setMimeType(metadata.getString("contentType"));
+            fileDto.setFilename(metadata.getString("originalFilename"));
+        }
+
+        return fileDto;
     }
 
     public void deleteExecutable(String fileId) {

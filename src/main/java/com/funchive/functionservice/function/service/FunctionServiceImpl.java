@@ -104,12 +104,12 @@ public class FunctionServiceImpl implements FunctionService {
 
     @Override
     @Transactional
-    public FunctionDetailDto updateCompilationStatus(String functionId, CompilationStatus compilationStatus) {
+    public void updateCompilationStatus(String functionId, CompilationStatus compilationStatus) {
         var function = findFunctionById(functionId);
         function.setCompilationStatus(compilationStatus);
         functionRepository.save(function);
 
-        return toFunctionDetailDto(function);
+        toFunctionDetailDto(function);
     }
 
     private Function findFunctionById(String id) {

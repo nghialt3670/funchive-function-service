@@ -40,7 +40,6 @@ public class PythonDockerSandboxStrategy implements DockerSandboxStrategy {
 
         List<FileCreateDto> files = new ArrayList<>();
 
-        // Create main.py file with the template and user code
         String mainPyContent = generateMainPyContent(pythonImplementation, functionDetailDto);
         FileDto mainPyFileDto = new FileDto();
         mainPyFileDto.setFilename("main.py");
@@ -49,17 +48,15 @@ public class PythonDockerSandboxStrategy implements DockerSandboxStrategy {
 
         FileCreateDto mainPyFile = new FileCreateDto();
         mainPyFile.setFileDto(mainPyFileDto);
-        mainPyFile.setFilePath("main.py");
+        mainPyFile.setFilePath("/app/main.py");
         files.add(mainPyFile);
 
-        // Create requirements.txt file from packages
         String requirementsContent = pythonImplementation.getPackages().stream()
                 .map(pkg -> pkg.getVersion() != null && !pkg.getVersion().isEmpty()
                         ? pkg.getName() + "==" + pkg.getVersion()
                         : pkg.getName())
                 .collect(Collectors.joining("\n"));
 
-        // Add PyInstaller to requirements for compilation
         if (!requirementsContent.isEmpty()) {
             requirementsContent += "\n";
         }
@@ -72,7 +69,7 @@ public class PythonDockerSandboxStrategy implements DockerSandboxStrategy {
 
         FileCreateDto requirementsFile = new FileCreateDto();
         requirementsFile.setFileDto(requirementsFileDto);
-        requirementsFile.setFilePath("requirements.txt");
+        requirementsFile.setFilePath("/app/requirements.txt");
         files.add(requirementsFile);
 
         return files;
@@ -80,22 +77,15 @@ public class PythonDockerSandboxStrategy implements DockerSandboxStrategy {
 
     private String generateMainPyContent(PythonImplementation pythonImplementation, FunctionDetailDto functionDetailDto) {
         try {
-            // Load the function template  
             String template = loadFunctionTemplate();
-
-            // Generate the imports
             String importsCode = generateImportsCode(pythonImplementation);
-
-            // Get the user function code
-            String userCode = pythonImplementation.getCode();
-
-            // Replace the import placeholder
+            String functionBody = pythonImplementation.getCode();
             template = template.replace("### BEGIN IMPORTS\n### END IMPORTS",
                     "### BEGIN IMPORTS\n" + importsCode + "\n### END IMPORTS");
 
             // Replace the function body placeholder
             template = template.replace("### BEGIN FUNCTION BODY\n### END FUNCTION BODY\n    pass",
-                    "### BEGIN FUNCTION BODY\n" + userCode + "\n### END FUNCTION BODY");
+                    "### BEGIN FUNCTION BODY\n" + functionBody + "\n### END FUNCTION BODY");
 
             return template;
 
@@ -105,7 +95,7 @@ public class PythonDockerSandboxStrategy implements DockerSandboxStrategy {
     }
 
     private String loadFunctionTemplate() throws IOException {
-        try (InputStream templateStream = getClass().getResourceAsStream("/templates/python.py")) {
+        try (InputStream templateStream = getClass().getResourceAsStream("/templates/function.py")) {
             if (templateStream == null) {
                 throw new IOException("Function template not found");
             }
@@ -139,17 +129,13 @@ public class PythonDockerSandboxStrategy implements DockerSandboxStrategy {
 
         return "FROM " + baseImage + "\n\n" +
 
-                // Set working directory
                 "WORKDIR /app\n\n" +
 
-                // Install system dependencies required by PyInstaller
                 "RUN apt-get update && \\\n" +
                 "    apt-get install -y binutils build-essential && \\\n" +
                 "    apt-get clean && \\\n" +
                 "    rm -rf /var/lib/apt/lists/*\n\n" +
 
-                // Create a compilation script that will run when container starts
-                // This script expects requirements.txt and main.py to be copied to the container
                 "RUN echo '#!/bin/bash' > /app/compile.sh && \\\n" +
                 "    echo 'set -e' >> /app/compile.sh && \\\n" +
                 "    echo 'echo \"Starting Python compilation...\"' >> /app/compile.sh && \\\n" +
@@ -173,24 +159,15 @@ public class PythonDockerSandboxStrategy implements DockerSandboxStrategy {
                 "    echo 'echo \"Compilation completed successfully!\"' >> /app/compile.sh && \\\n" +
                 "    chmod +x /app/compile.sh\n\n" +
 
-                // Set the default command to run the compilation script
                 "CMD [\"/app/compile.sh\"]\n";
     }
 
     @Override
     public String getExecutionDockerfileContent(Implementation implementation) {
         return "FROM alpine:latest\n\n" +
-
-                // Set working directory
                 "WORKDIR /app\n\n" +
-
-                // Copy the compiled executable from compilation stage
                 "COPY main_executable .\n\n" +
-
-                // Ensure executable permissions
                 "RUN chmod +x main_executable\n\n" +
-
-                // Set the default command to run the executable (reads from INPUT_JSON env var)
                 "CMD [\"./main_executable\"]\n";
     }
 

@@ -7,4 +7,6 @@ public interface SandboxService {
     void compileFunction(FunctionDetailDto functionDetailDto);
 
     void executeFunction(FunctionDetailDto functionDetailDto, ExecutionTriggerDto executionTriggerDto);
+
+    void deleteFunctionExecutable(FunctionDetailDto functionDetailDto);
 }

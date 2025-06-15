@@ -6,6 +6,7 @@ import com.funchive.functionservice.function.ExecutableStorage;
 import com.funchive.functionservice.function.FunctionService;
 import com.funchive.functionservice.function.SandboxService;
 import com.funchive.functionservice.function.config.properties.DockerConfigProperties;
+import com.funchive.functionservice.function.exception.ContainerRunFailedException;
 import com.funchive.functionservice.function.exception.FunctionAlreadyCompiledException;
 import com.funchive.functionservice.function.exception.FunctionNotCompiledException;
 import com.funchive.functionservice.function.exception.ImplementationNotSupported;
@@ -33,7 +34,6 @@ public class DockerSandboxService implements SandboxService {
     private final FunctionService functionService;
     private final List<DockerSandboxStrategy> strategies;
     private final NotificationService notificationService;
-    private final DockerConfigProperties dockerConfigProperties;
     private final ObjectMapper objectMapper;
 
     @Async
@@ -56,28 +56,27 @@ public class DockerSandboxService implements SandboxService {
 
         try {
             var dockerfileContent = strategy.getCompilationDockerfileContent(implementation);
-            imageId = dockerService.buildImage(dockerfileContent);
+            log.info("Building Docker image with Dockerfile content:\n{}", dockerfileContent);
+            imageId = dockerService.buildImage(dockerfileContent, log::error);
             containerId = dockerService.createContainer(imageId);
 
             var sourceFileCreateDtos = strategy.createSourceFiles(functionDetailDto);
-            for (var sourceFileCreateDto : sourceFileCreateDtos) {
-                dockerService.createFileInContainer(containerId, sourceFileCreateDto);
+            dockerService.createFilesInContainer(containerId, sourceFileCreateDtos);
+            dockerService.startContainer(containerId, log::info);
+
+            if (!dockerService.waitContainer(containerId)) {
+                var containerLogs = dockerService.getContainerLogs(containerId);
+                var runTimeSeconds = dockerService.getContainerRunTimeSeconds(containerId);
+                throw new ContainerRunFailedException(dockerfileContent, containerId, containerLogs, runTimeSeconds);
             }
 
-            dockerService.startContainer(containerId);
-
-            // Check container logs for debugging
-            String containerLogs = dockerService.getContainerLog(containerId);
-            log.debug("Compilation logs for function {}: {}", functionDetailDto.getId(), containerLogs);
-
-            // Wait for compilation to complete and retrieve the executable
             var executablePath = strategy.getExecutablePath();
             var executable = dockerService.getFileInContainer(containerId, executablePath);
 
             executableStorage.storeExecutable(functionDetailDto.getId(), executable);
             functionService.updateCompilationStatus(functionDetailDto.getId(), CompilationStatus.SUCCESS);
 
-            int duration = (int) Duration.between(startTime, Instant.now()).toMillis();
+            var duration = (int) Duration.between(startTime, Instant.now()).toMillis();
 
             log.info("Compilation succeeded for function {}: {}", functionDetailDto.getId(), compilationResultDto);
             compilationResultDto = CompilationResultDto.builder()
@@ -124,8 +123,8 @@ public class DockerSandboxService implements SandboxService {
         String imageId = null;
 
         try {
-            var executionDockerfileContent = strategy.getExecutionDockerfileContent(implementation);
-            imageId = dockerService.buildImage(executionDockerfileContent);
+            var dockerfileContent = strategy.getExecutionDockerfileContent(implementation);
+            imageId = dockerService.buildImage(dockerfileContent, log::error);
 
             Map<String, String> inputEnvironmentVariables = new HashMap<>();
             var inputValue = executionTriggerDto.getInputValue();
@@ -145,6 +144,12 @@ public class DockerSandboxService implements SandboxService {
             notificationService.notifyExecutionStarted(functionDetailDto.getId());
 
             dockerService.startContainer(containerId);
+
+            if (!dockerService.waitContainer(containerId)) {
+                var containerLogs = dockerService.getContainerLogs(containerId);
+                var runTimeSeconds = dockerService.getContainerRunTimeSeconds(containerId);
+                throw new ContainerRunFailedException(dockerfileContent, containerId, containerLogs, runTimeSeconds);
+            }
 
             duration = (int) Duration.between(startTime, Instant.now()).toMillis();
 
@@ -178,6 +183,11 @@ public class DockerSandboxService implements SandboxService {
                 dockerService.removeImage(imageId);
             }
         }
+    }
+
+    @Override
+    public void deleteFunctionExecutable(FunctionDetailDto functionDetailDto) {
+        executableStorage.deleteExecutable(functionDetailDto.getId());
     }
 
     private DockerSandboxStrategy getDockerSandboxStrategy(Implementation implementation) {

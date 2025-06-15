@@ -19,5 +19,5 @@ public interface FunctionService {
 
     FunctionDetailDto deleteFunction(String functionId);
 
-    FunctionDetailDto updateCompilationStatus(String functionId, CompilationStatus compilationStatus);
+    void updateCompilationStatus(String functionId, CompilationStatus compilationStatus);
 }

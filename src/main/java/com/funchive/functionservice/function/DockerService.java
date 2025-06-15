@@ -5,29 +5,38 @@ import com.funchive.functionservice.function.model.dto.FileDto;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public interface DockerService {
-    public String buildImage(String dockerfileContent);
+    String buildImage(String dockerfileContent);
 
-    public void removeImage(String imageId);
+    String buildImage(String dockerfileContent, Consumer<String> logConsumer);
 
-    public String createContainer(String imageId);
+    void removeImage(String imageId);
 
-    public String createContainer(String imageId, Map<String, String> environmentVariables);
+    String createContainer(String imageId);
 
-    public void startContainer(String containerId);
+    String createContainer(String imageId, Map<String, String> environmentVariables);
 
-    public void stopContainer(String containerId);
+    void startContainer(String containerId);
 
-    public void removeContainer(String containerId);
+    void startContainer(String containerId, Consumer<String> logConsumer);
 
-    public FileDto getFileInContainer(String containerId, String filePath);
+    boolean waitContainer(String containerId);
 
-    public void createFileInContainer(String containerId, FileCreateDto fileCreateDto);
+    void stopContainer(String containerId);
 
-    public void createFilesInContainer(String containerId, List<FileCreateDto> fileCreateDtos);
+    void removeContainer(String containerId);
 
-    public Map<String, String> getEnvironmentVariables(String containerId);
+    FileDto getFileInContainer(String containerId, String filePath);
 
-    public String getContainerLog(String containerId);
+    void createFileInContainer(String containerId, FileCreateDto fileCreateDto);
+
+    void createFilesInContainer(String containerId, List<FileCreateDto> fileCreateDtos);
+
+    Map<String, String> getEnvironmentVariables(String containerId);
+
+    List<String> getContainerLogs(String containerId);
+
+    long getContainerRunTimeSeconds(String containerId);
 }

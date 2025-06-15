@@ -7,7 +7,6 @@ import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;
-import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
@@ -25,32 +24,60 @@ public class GridExecutableStorage implements ExecutableStorage {
     public void storeExecutable(String fileId, FileDto fileDto) {
         GridFSUploadOptions options = new GridFSUploadOptions()
                 .metadata(new Document()
-                        .append("contentType", fileDto.getMimeType()));
+                        .append("contentType", fileDto.getMimeType())
+                        .append("originalFilename", fileDto.getFilename()));
 
         try {
             getGridFSBucket().uploadFromStream(
-                    fileDto.getFilename(),
+                    fileId,  // Use fileId as the filename in GridFS
                     fileDto.getFileStream(),
                     options
             );
         } catch (Exception e) {
-            throw new RuntimeException("Failed to store file", e);
+            throw new RuntimeException("Failed to store executable with ID: " + fileId, e);
         }
     }
 
     @Override
     public FileDto loadExecutable(String fileId) {
         try {
+            var gridFSFile = getGridFSBucket().find(new Document("filename", fileId)).first();
+            if (gridFSFile == null) {
+                throw new RuntimeException("Executable not found with ID: " + fileId);
+            }
+
             FileDto fileDto = new FileDto();
-            fileDto.setFileStream(getGridFSBucket().openDownloadStream(new ObjectId(fileId)));
-            // TODO: Set filename and content type from GridFS metadata
+            fileDto.setFileStream(getGridFSBucket().openDownloadStream(fileId));
+
+            // Set metadata from GridFS
+            var metadata = gridFSFile.getMetadata();
+            if (metadata != null) {
+                fileDto.setMimeType(metadata.getString("contentType"));
+                fileDto.setFilename(metadata.getString("originalFilename"));
+            }
+
+            // Fallback if no metadata
+            if (fileDto.getFilename() == null) {
+                fileDto.setFilename("main_executable");
+            }
+            if (fileDto.getMimeType() == null) {
+                fileDto.setMimeType("application/octet-stream");
+            }
+
             return fileDto;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to retrieve file", e);
+            throw new RuntimeException("Failed to retrieve executable with ID: " + fileId, e);
         }
     }
 
     public void deleteExecutable(String fileId) {
-        getGridFSBucket().delete(new ObjectId(fileId));
+        try {
+            var gridFSFile = getGridFSBucket().find(new Document("filename", fileId)).first();
+            if (gridFSFile != null) {
+                getGridFSBucket().delete(gridFSFile.getObjectId());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to delete executable with ID: " + fileId, e);
+        }
     }
 } 

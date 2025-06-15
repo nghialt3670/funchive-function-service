@@ -28,13 +28,11 @@ public class DockerConfig {
 
     @Bean
     public DockerClient dockerClient(DockerClientConfig config) {
-        // Use configurable timeouts for Windows Docker Desktop compatibility
-        // Image pulling, and compilation can take longer on Windows systems
         OkDockerHttpClient httpClient = new OkDockerHttpClient.Builder()
                 .dockerHost(config.getDockerHost())
                 .sslConfig(config.getSSLConfig())
-                .connectTimeout(dockerConfigProperties.getConnectTimeoutSeconds())    // Configurable connect timeout
-                .readTimeout(dockerConfigProperties.getReadTimeoutSeconds())         // Configurable read timeout
+                .connectTimeout(dockerConfigProperties.getConnectTimeoutSeconds())
+                .readTimeout(dockerConfigProperties.getReadTimeoutSeconds())
                 .build();
 
         DockerClient client = DockerClientBuilder.getInstance(config)
@@ -42,7 +40,6 @@ public class DockerConfig {
                 .build();
 
         try {
-            // Test Docker connection with a simple ping
             log.info("Testing Docker connection...");
             client.pingCmd().exec();
             log.info("✓ Docker client successfully connected to: {}", dockerConfigProperties.getHost());

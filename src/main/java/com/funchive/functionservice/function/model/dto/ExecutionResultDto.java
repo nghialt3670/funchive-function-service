@@ -9,5 +9,5 @@ import lombok.Data;
 public class ExecutionResultDto {
     private boolean success;
     private int duration;
-    private Value<?> output;
+    private Value<?> outputValue;
 }

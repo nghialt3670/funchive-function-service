@@ -1,21 +1,19 @@
 package com.funchive.functionservice.function.service;
 
 import com.funchive.functionservice.function.model.document.Implementation;
-import com.funchive.functionservice.function.model.document.Value;
-import com.funchive.functionservice.function.model.dto.FileDto;
+import com.funchive.functionservice.function.model.dto.FileCreateDto;
+import com.funchive.functionservice.function.model.dto.FunctionDetailDto;
 
-import java.util.Map;
+import java.util.List;
 
 public interface DockerSandboxStrategy {
-    Map<String, FileDto> getSourceFiles(Implementation implementation);
+    List<FileCreateDto> createSourceFiles(FunctionDetailDto functionDetailDto);
 
     String getCompilationDockerfileContent(Implementation implementation);
 
     String getExecutionDockerfileContent(Implementation implementation);
 
     String getExecutablePath();
-
-    Value<?> createOutputFromLog(String log);
 
     boolean isImplementationSupported(Implementation implementation);
 }

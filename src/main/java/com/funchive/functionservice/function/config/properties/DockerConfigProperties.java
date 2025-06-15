@@ -15,5 +15,5 @@ public class DockerConfigProperties {
     private int connectTimeoutSeconds = 120;        // 2 minutes for connection
     private int readTimeoutSeconds = 3600;          // 1 hour for large image pulls
     private int containerTimeoutSeconds = 600;      // 10 minutes for container execution
-    private int imagePullTimeoutSeconds = 3600;     // 1 hour for pulling large images
+    private int imageBuildTimeOutSeconds = 3600;     // 1 hour for pulling large images
 }

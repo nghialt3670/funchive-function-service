@@ -4,18 +4,12 @@ import com.funchive.functionservice.common.model.dto.ResponseBody;
 import com.funchive.functionservice.common.model.dto.ResponsePage;
 import com.funchive.functionservice.function.FunctionService;
 import com.funchive.functionservice.function.SandboxService;
-import com.funchive.functionservice.function.model.document.Value;
-import com.funchive.functionservice.function.model.dto.FunctionCreateDto;
-import com.funchive.functionservice.function.model.dto.FunctionDetailDto;
-import com.funchive.functionservice.function.model.dto.FunctionFilter;
-import com.funchive.functionservice.function.model.dto.FunctionUpdateDto;
+import com.funchive.functionservice.function.model.dto.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.ObjectUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 
 @Tag(name = "Function API")
@@ -97,11 +91,11 @@ public class FunctionController {
     @PostMapping("/{functionId}/execute")
     public ResponseBody<ObjectUtils.Null> executeFunction(
             @PathVariable String functionId,
-            @RequestBody List<Value<?>> inputs
+            @RequestBody ExecutionTriggerDto executionTriggerDto
     ) {
         var functionDetailDto = functionService.getFunctionDetail(functionId);
 
-        sandboxService.executeFunction(functionDetailDto);
+        sandboxService.executeFunction(functionDetailDto, executionTriggerDto);
 
         return ResponseBody.of(null);
     }

@@ -11,8 +11,6 @@ import java.util.List;
 @Data
 public class FunctionDetailDto {
     private String id;
-    private String name;
-    private String description;
     private Definition definition;
     private Implementation implementation;
     private CompilationStatus compilationStatus;
@@ -20,14 +18,4 @@ public class FunctionDetailDto {
     private Instant updatedAt;
     private String createdBy;
     private String updatedBy;
-    private List<ParameterDto> parameters;
-
-    @Data
-    public static class ParameterDto {
-        private String name;
-        private String type;
-        private boolean required;
-        private String description;
-        private Object defaultValue;
-    }
 }

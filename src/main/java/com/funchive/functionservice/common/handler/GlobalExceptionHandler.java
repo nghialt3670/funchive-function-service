@@ -1,4 +1,4 @@
-package com.funchive.functionservice.common.config.handler;
+package com.funchive.functionservice.common.handler;
 
 import com.funchive.functionservice.common.exception.Error;
 import com.funchive.functionservice.common.exception.ErrorException;

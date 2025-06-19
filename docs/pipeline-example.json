@@ -1,0 +1,122 @@
+{
+  "name": "Image Processing Pipeline",
+  "description": "A sample pipeline that processes an image through multiple functions",
+  "nodes": [
+    {
+      "id": "input_image",
+      "nodeType": "VALUE",
+      "name": "Input Image",
+      "position": { "x": 100, "y": 100 },
+      "value": {
+        "type": "FILE",
+        "data": {
+          "filename": "input.jpg",
+          "path": "/uploads/input.jpg",
+          "size": 1024000
+        }
+      }
+    },
+    {
+      "id": "resize_params",
+      "nodeType": "VALUE", 
+      "name": "Resize Parameters",
+      "position": { "x": 100, "y": 200 },
+      "value": {
+        "type": "OBJECT",
+        "data": {
+          "width": 800,
+          "height": 600,
+          "maintain_aspect_ratio": true
+        }
+      }
+    },
+    {
+      "id": "resize_function",
+      "nodeType": "FUNCTION",
+      "name": "Resize Image",
+      "position": { "x": 400, "y": 150 },
+      "functionId": "image_resize_func_123"
+    },
+    {
+      "id": "filter_params",
+      "nodeType": "VALUE",
+      "name": "Filter Settings",
+      "position": { "x": 400, "y": 300 },
+      "value": {
+        "type": "OBJECT",
+        "data": {
+          "filter_type": "blur",
+          "intensity": 2.5
+        }
+      }
+    },
+    {
+      "id": "apply_filter",
+      "nodeType": "FUNCTION",
+      "name": "Apply Filter",
+      "position": { "x": 700, "y": 200 },
+      "functionId": "image_filter_func_456"
+    },
+    {
+      "id": "output_path",
+      "nodeType": "VALUE",
+      "name": "Output Path",
+      "position": { "x": 700, "y": 350 },
+      "value": {
+        "type": "STRING",
+        "data": "/outputs/processed_image.jpg"
+      }
+    },
+    {
+      "id": "save_image",
+      "nodeType": "FUNCTION",
+      "name": "Save Image",
+      "position": { "x": 1000, "y": 275 },
+      "functionId": "image_save_func_789"
+    }
+  ],
+  "connections": [
+    {
+      "id": "conn1",
+      "sourceNodeId": "input_image",
+      "targetNodeId": "resize_function",
+      "sourcePort": "output",
+      "targetPort": "image_input"
+    },
+    {
+      "id": "conn2", 
+      "sourceNodeId": "resize_params",
+      "targetNodeId": "resize_function",
+      "sourcePort": "output",
+      "targetPort": "resize_params"
+    },
+    {
+      "id": "conn3",
+      "sourceNodeId": "resize_function",
+      "targetNodeId": "apply_filter",
+      "sourcePort": "resized_image",
+      "targetPort": "image_input"
+    },
+    {
+      "id": "conn4",
+      "sourceNodeId": "filter_params",
+      "targetNodeId": "apply_filter", 
+      "sourcePort": "output",
+      "targetPort": "filter_settings"
+    },
+    {
+      "id": "conn5",
+      "sourceNodeId": "apply_filter",
+      "targetNodeId": "save_image",
+      "sourcePort": "filtered_image",
+      "targetPort": "image_input"
+    },
+    {
+      "id": "conn6",
+      "sourceNodeId": "output_path",
+      "targetNodeId": "save_image",
+      "sourcePort": "output", 
+      "targetPort": "output_path"
+    }
+  ]
+} 

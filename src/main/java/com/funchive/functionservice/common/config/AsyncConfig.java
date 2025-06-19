@@ -1,4 +1,4 @@
-package com.funchive.functionservice.function.config;
+package com.funchive.functionservice.common.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

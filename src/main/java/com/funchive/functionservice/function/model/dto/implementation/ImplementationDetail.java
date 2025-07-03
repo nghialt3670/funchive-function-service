@@ -24,6 +24,7 @@ public abstract class ImplementationDetail {
     protected String id;
     protected String type;
     protected String name;
+    protected String description;
     protected String createdBy;
     protected Instant createdAt;
     protected String updatedBy;

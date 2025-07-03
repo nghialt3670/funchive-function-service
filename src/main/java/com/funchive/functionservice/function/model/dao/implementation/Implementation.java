@@ -13,11 +13,14 @@ import java.time.Instant;
 @AllArgsConstructor
 @Document("implementations")
 public abstract class Implementation {
-    protected ImplementationType type;
-    protected String name;
     @Id
     private String id;
     private String functionId;
+    protected ImplementationType type;
+    protected String name;
+    protected String description;
+    protected ExecutionConfig executionConfig;
+
     @CreatedBy
     private String createdBy;
     @CreatedDate

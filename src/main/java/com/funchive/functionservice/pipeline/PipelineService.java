@@ -13,7 +13,7 @@ public interface PipelineService {
 
     PipelineDetail updatePipeline(String pipelineId, PipelineUpdate pipelineUpdate);
 
-    PipelineDetail deletePipeline(String pipelineId);
+    void deletePipeline(String pipelineId);
 
-    void executePipeline(String pipelineId, PipelineExecutionTriggerDto executionTriggerDto);
-} 
+    void executePipeline(String pipelineId);
+}

@@ -12,11 +12,12 @@ import java.util.List;
 public class Pipeline {
     @Id
     private String id;
-
     private String name;
     private String description;
     private List<Node> nodes;
     private List<Connection> connections;
+    private ExecutionConfig executionConfig;
+    private ExecutionStatus executionStatus;
 
     @CreatedBy
     private String createdBy;

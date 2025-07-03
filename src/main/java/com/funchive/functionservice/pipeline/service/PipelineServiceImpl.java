@@ -8,10 +8,10 @@ import com.funchive.functionservice.pipeline.model.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -19,10 +19,10 @@ import org.springframework.stereotype.Service;
 public class PipelineServiceImpl implements PipelineService {
 
     private final PipelineRepository pipelineRepository;
-    private final PipelineExecutionService pipelineExecutionService;
     private final ModelMapper modelMapper;
 
     @Override
+    @Transactional
     public PipelineDetail createPipeline(PipelineCreate pipelineCreate) {
         Pipeline createdPipeline = modelMapper.map(pipelineCreate, Pipeline.class);
         Pipeline savedPipeline = pipelineRepository.save(createdPipeline);
@@ -30,66 +30,39 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PipelineDetail getPipelineDetail(String pipelineId) {
-        Pipeline pipeline = pipelineRepository.findById(pipelineId)
-                .orElseThrow(() -> new RuntimeException("Pipeline not found: " + pipelineId));
-
-        PipelineDetail pipelineDetail = new PipelineDetail();
-        BeanUtils.copyProperties(pipeline, pipelineDetail);
-
-        return pipelineDetail;
+        Pipeline pipeline = findPipelineById(pipelineId);
+        return modelMapper.map(pipeline, PipelineDetail.class);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<PipelineDetail> getPipelinePage(PipelineFilter pipelineFilter, Pageable pageable) {
-        // For now, returning all pipelines. In a real implementation, you'd filter based on the filter criteria
         Page<Pipeline> pipelinePage = pipelineRepository.findAll(pageable);
-
-        return pipelinePage.map(pipeline -> {
-            PipelineDetail dto = new PipelineDetail();
-            BeanUtils.copyProperties(pipeline, dto);
-            return dto;
-        });
+        return pipelinePage.map(pipeline -> modelMapper.map(pipeline, PipelineDetail.class));
     }
 
     @Override
+    @Transactional
     public PipelineDetail updatePipeline(String pipelineId, PipelineUpdate pipelineUpdate) {
-        Pipeline pipeline = pipelineRepository.findById(pipelineId)
-                .orElseThrow(() -> new RuntimeException("Pipeline not found: " + pipelineId));
-
-        BeanUtils.copyProperties(pipelineUpdate, pipeline);
+        Pipeline pipeline = findPipelineById(pipelineId);
+        modelMapper.map(pipelineUpdate, pipeline);
         Pipeline updatedPipeline = pipelineRepository.save(pipeline);
-
-        PipelineDetail pipelineDetail = new PipelineDetail();
-        BeanUtils.copyProperties(updatedPipeline, pipelineDetail);
-
-        return pipelineDetail;
+        return modelMapper.map(updatedPipeline, PipelineDetail.class);
     }
 
     @Override
-    public PipelineDetail deletePipeline(String pipelineId) {
-        Pipeline pipeline = pipelineRepository.findById(pipelineId)
-                .orElseThrow(() -> new RuntimeException("Pipeline not found: " + pipelineId));
-
+    @Transactional
+    public void deletePipeline(String pipelineId) {
+        Pipeline pipeline = findPipelineById(pipelineId);
         pipelineRepository.delete(pipeline);
-
-        PipelineDetail pipelineDetail = new PipelineDetail();
-        BeanUtils.copyProperties(pipeline, pipelineDetail);
-
-        return pipelineDetail;
     }
 
     @Override
-    public void executePipeline(String pipelineId, PipelineExecutionTriggerDto executionTriggerDto) {
-        Pipeline pipeline = pipelineRepository.findById(pipelineId)
-                .orElseThrow(() -> new RuntimeException("Pipeline not found: " + pipelineId));
-
-        log.info("Starting pipeline execution for pipeline: {}", pipelineId);
-
-        // Execute the pipeline using the dedicated execution service
-        pipelineExecutionService.executePipeline(pipeline, executionTriggerDto.getInputs());
-
-        log.info("Pipeline execution completed for pipeline: {}", pipelineId);
+    @Transactional
+    public void executePipeline(String pipelineId) {
+        Pipeline pipeline = findPipelineById(pipelineId);
     }
 
     private Pipeline findPipelineById(String pipelineId) {

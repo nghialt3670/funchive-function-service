@@ -27,6 +27,7 @@ import java.time.Instant;
 @Service
 @RequiredArgsConstructor
 public class FunctionServiceImpl implements FunctionService {
+
     private final FunctionRepository functionRepository;
     private final ImplementationRepository implementationRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
@@ -58,14 +59,9 @@ public class FunctionServiceImpl implements FunctionService {
     @Override
     @Transactional
     public FunctionDetail updateFunction(String functionId, @NotNull FunctionUpdate functionUpdate) {
-        var function = findFunctionById(functionId);
-
-        function.setName(functionUpdate.getName());
-        function.setDescription(functionUpdate.getDescription());
-
-        var updatedFunction = functionRepository.save(function);
-
-        return modelMapper.map(updatedFunction, FunctionDetail.class);
+        Function function = findFunctionById(functionId);
+        modelMapper.map(functionUpdate, function);
+        return modelMapper.map(function, FunctionDetail.class);
     }
 
     @Override
@@ -110,8 +106,8 @@ public class FunctionServiceImpl implements FunctionService {
             throw new ImplementationNotMatchException(impl.getType().name(), implementationUpdate.getType());
         }
 
-        Implementation updatedImpl = modelMapper.map(implementationUpdate, Implementation.class);
-        Implementation savedImpl = implementationRepository.save(updatedImpl);
+        modelMapper.map(implementationUpdate, impl);
+        Implementation savedImpl = implementationRepository.save(impl);
 
         return modelMapper.map(savedImpl, ImplementationDetail.class);
     }

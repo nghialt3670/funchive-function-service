@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.ObjectUtils;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,7 +41,8 @@ public class PipelineController {
                 .keyword(keyword)
                 .build();
 
-        return ResponseBody.of(ResponsePage.of(pipelineService.getPipelinePage(pipelineFilter, pageable)));
+        Page<PipelineDetail> pipelinePage = pipelineService.getPipelinePage(pipelineFilter, pageable);
+        return ResponseBody.of(ResponsePage.of(pipelinePage));
     }
 
     @PutMapping("/{pipelineId}")
@@ -53,16 +55,14 @@ public class PipelineController {
     }
 
     @DeleteMapping("/{pipelineId}")
-    public ResponseBody<PipelineDetail> deletePipeline(@PathVariable String pipelineId) {
-        return ResponseBody.of(pipelineService.deletePipeline(pipelineId));
+    public ResponseBody<ObjectUtils.Null> deletePipeline(@PathVariable String pipelineId) {
+        pipelineService.deletePipeline(pipelineId);
+        return ResponseBody.ok();
     }
 
     @PostMapping("/{pipelineId}/execute")
-    public ResponseBody<ObjectUtils.Null> executePipeline(
-            @PathVariable String pipelineId,
-            @RequestBody PipelineExecutionTriggerDto executionTriggerDto
-    ) {
-        pipelineService.executePipeline(pipelineId, executionTriggerDto);
-        return ResponseBody.of(null);
+    public ResponseBody<ObjectUtils.Null> executePipeline(@PathVariable String pipelineId) {
+        pipelineService.executePipeline(pipelineId);
+        return ResponseBody.ok();
     }
 } 

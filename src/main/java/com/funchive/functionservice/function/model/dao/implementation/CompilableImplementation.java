@@ -6,6 +6,6 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class CompilableImplementation extends Implementation {
-    private CompilationStatus compilationStatus = CompilationStatus.NOT_STARTED;
-
+    private CompilationStatus compilationStatus = CompilationStatus.IDLE;
+    private CompilationConfig compilationConfig;
 }

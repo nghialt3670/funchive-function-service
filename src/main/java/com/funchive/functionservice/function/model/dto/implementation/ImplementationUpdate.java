@@ -21,4 +21,5 @@ import lombok.Data;
 public abstract class ImplementationUpdate {
     protected String type;
     protected String name;
+    protected String description;
 } 

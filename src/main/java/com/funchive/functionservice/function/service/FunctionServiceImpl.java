@@ -1,115 +1,169 @@
 package com.funchive.functionservice.function.service;
 
-import com.funchive.functionservice.function.FunctionRepository;
 import com.funchive.functionservice.function.FunctionService;
-import com.funchive.functionservice.function.exception.FunctionNotFoundException;
-import com.funchive.functionservice.function.model.document.CompilationStatus;
-import com.funchive.functionservice.function.model.document.Function;
-import com.funchive.functionservice.function.model.dto.FunctionCreateDto;
-import com.funchive.functionservice.function.model.dto.FunctionDetailDto;
-import com.funchive.functionservice.function.model.dto.FunctionFilter;
-import com.funchive.functionservice.function.model.dto.FunctionUpdateDto;
+import com.funchive.functionservice.function.exception.*;
+import com.funchive.functionservice.function.model.dao.function.Function;
+import com.funchive.functionservice.function.model.dao.implementation.*;
+import com.funchive.functionservice.function.model.dto.function.*;
+import com.funchive.functionservice.function.model.dto.implementation.ImplementationCreate;
+import com.funchive.functionservice.function.model.dto.implementation.ImplementationDetail;
+import com.funchive.functionservice.function.model.dto.implementation.ImplementationFilter;
+import com.funchive.functionservice.function.model.dto.implementation.ImplementationUpdate;
+import com.funchive.functionservice.function.model.dto.message.CompilationRequestMessage;
+import com.funchive.functionservice.function.model.dto.message.ExecutionRequestMessage;
+import com.funchive.functionservice.function.repository.FunctionRepository;
+import com.funchive.functionservice.function.repository.ImplementationRepository;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
 public class FunctionServiceImpl implements FunctionService {
-    @Autowired
     private final FunctionRepository functionRepository;
+    private final ImplementationRepository implementationRepository;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final ModelMapper modelMapper;
 
     @Override
     @Transactional
-    public FunctionDetailDto createFunction(FunctionCreateDto functionCreateDto) {
-        var function = new Function();
-
-        function.setDefinition(functionCreateDto.getDefinition());
-        function.setImplementation(functionCreateDto.getImplementation());
-        function.setCompilationStatus(CompilationStatus.NOT_STARTED);
-
-        var createdFunction = functionRepository.save(function);
-
-        return toFunctionDetailDto(createdFunction);
+    public FunctionDetail createFunction(@NotNull FunctionCreate functionCreate) {
+        Function function = modelMapper.map(functionCreate, Function.class);
+        Function savedFunction = functionRepository.save(function);
+        return modelMapper.map(savedFunction, FunctionDetail.class);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public FunctionDetailDto getFunctionDetail(String functionId) {
-        var function = findFunctionById(functionId);
-
-        return toFunctionDetailDto(function);
+    public FunctionDetail getFunctionDetail(String functionId) {
+        Function function = findFunctionById(functionId);
+        return modelMapper.map(function, FunctionDetail.class);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<FunctionDetailDto> getFunctionPage(FunctionFilter functionFilter, Pageable pageable) {
+    public Page<FunctionDetail> getFunctionPage(FunctionFilter functionFilter, Pageable pageable) {
         // TODO: Implement filter criteria using QueryDSL or Criteria API
         Page<Function> functionPage = functionRepository.findAll(pageable);
-        return functionPage.map(this::toFunctionDetailDto);
+        return functionPage.map(function -> modelMapper.map(function, FunctionDetail.class));
     }
 
     @Override
     @Transactional
-    public FunctionDetailDto updateFunction(String functionId, @NotNull FunctionUpdateDto functionUpdateDto) {
+    public FunctionDetail updateFunction(String functionId, @NotNull FunctionUpdate functionUpdate) {
         var function = findFunctionById(functionId);
 
-        var definitionUpdateDto = functionUpdateDto.getDefinition();
-        var definition = function.getDefinition();
-
-        if (definitionUpdateDto.getName() != null) {
-            definition.setName(definitionUpdateDto.getName());
-        }
-        if (definitionUpdateDto.getDescription() != null) {
-            definition.setDescription(definitionUpdateDto.getDescription());
-        }
-        if (definitionUpdateDto.getInputType() != null) {
-            definition.setInputType(definitionUpdateDto.getInputType());
-        }
-        if (definitionUpdateDto.getOutputType() != null) {
-            definition.setOutputType(definitionUpdateDto.getOutputType());
-        }
-
-        var implementationUpdateDto = functionUpdateDto.getImplementation();
-        var implementation = function.getImplementation();
-
-        if (implementationUpdateDto.getLanguage() != null) {
-            implementation.setLanguage(implementationUpdateDto.getLanguage());
-        }
-        if (implementationUpdateDto.getCode() != null) {
-            implementation.setCode(implementationUpdateDto.getCode());
-        }
-
-        function.setDefinition(definition);
-        function.setImplementation(implementation);
-        function.setCompilationStatus(CompilationStatus.OUTDATED);
+        function.setName(functionUpdate.getName());
+        function.setDescription(functionUpdate.getDescription());
 
         var updatedFunction = functionRepository.save(function);
 
-        return toFunctionDetailDto(updatedFunction);
+        return modelMapper.map(updatedFunction, FunctionDetail.class);
     }
 
     @Override
     @Transactional
-    public FunctionDetailDto deleteFunction(String functionId) {
-        var function = findFunctionById(functionId);
-        functionRepository.delete(function);
-
-        return toFunctionDetailDto(function);
+    public void deleteFunction(String functionId) {
+        functionRepository.delete(findFunctionById(functionId));
     }
 
     @Override
     @Transactional
-    public void updateCompilationStatus(String functionId, CompilationStatus compilationStatus) {
-        var function = findFunctionById(functionId);
-        function.setCompilationStatus(compilationStatus);
-        functionRepository.save(function);
+    public ImplementationDetail createImplementation(String functionId, ImplementationCreate implementationCreate) {
+        Implementation impl = modelMapper.map(implementationCreate, Implementation.class);
+        Implementation savedImpl = implementationRepository.save(impl);
+        return modelMapper.map(savedImpl, ImplementationDetail.class);
+    }
 
-        toFunctionDetailDto(function);
+    @Override
+    @Transactional(readOnly = true)
+    public ImplementationDetail getImplementationDetail(String functionId, String implementationId) {
+        Implementation impl = findImplementationByIdAndFunctionId(implementationId, functionId);
+        return modelMapper.map(impl, ImplementationDetail.class);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ImplementationDetail> getImplementationPage(
+            String functionId,
+            ImplementationFilter implementationFilter,
+            Pageable pageable
+    ) {
+        // TODO: Implement filter criteria using QueryDSL or Criteria API
+        Page<Implementation> implPage = implementationRepository.findAll(pageable);
+        return implPage.map(impl -> modelMapper.map(impl, ImplementationDetail.class));
+    }
+
+    @Override
+    @Transactional
+    public ImplementationDetail updateImplementation(String functionId, String implementationId, ImplementationUpdate implementationUpdate) {
+        Implementation impl = findImplementationByIdAndFunctionId(implementationId, functionId);
+
+        if (!implementationUpdate.getType().equals(impl.getType().name())) {
+            throw new ImplementationNotMatchException(impl.getType().name(), implementationUpdate.getType());
+        }
+
+        Implementation updatedImpl = modelMapper.map(implementationUpdate, Implementation.class);
+        Implementation savedImpl = implementationRepository.save(updatedImpl);
+
+        return modelMapper.map(savedImpl, ImplementationDetail.class);
+    }
+
+    @Override
+    @Transactional
+    public void deleteImplementation(String functionId, String implementationId) {
+        Implementation impl = findImplementationByIdAndFunctionId(implementationId, functionId);
+        implementationRepository.delete(impl);
+    }
+
+    @Override
+    @Transactional
+    public void compileFunction(String functionId, String implementationId) {
+        Implementation implementation = findImplementationByIdAndFunctionId(implementationId, functionId);
+
+        if (implementation instanceof CompilableImplementation compilableImplementation) {
+            if (compilableImplementation.getCompilationStatus().equals(CompilationStatus.COMPILED)) {
+                throw new ImplementationNotCompilableException(implementationId);
+            }
+        } else {
+            throw new ImplementationNotCompilableException(implementationId);
+        }
+
+        CompilationRequestMessage message = CompilationRequestMessage.builder()
+                .functionId(functionId)
+                .implementationId(implementationId)
+                .timestamp(Instant.now())
+                .build();
+
+        kafkaTemplate.send("function.compile.request", message);
+    }
+
+    @Override
+    @Transactional
+    public void executeFunction(String functionId, String implementationId, String inputValueId) {
+        Implementation implementation = findImplementationByIdAndFunctionId(implementationId, functionId);
+
+        if (implementation instanceof CompilableImplementation compilableImplementation) {
+            if (!compilableImplementation.getCompilationStatus().equals(CompilationStatus.COMPILED)) {
+                throw new ImplementationNotCompilableException(implementationId);
+            }
+        }
+
+        ExecutionRequestMessage message = ExecutionRequestMessage.builder()
+                .functionId(functionId)
+                .implementationId(implementationId)
+                .inputValueId(inputValueId)
+                .timestamp(Instant.now())
+                .build();
+
+        kafkaTemplate.send("function.execute.request", message);
     }
 
     private Function findFunctionById(String id) {
@@ -117,18 +171,14 @@ public class FunctionServiceImpl implements FunctionService {
                 .orElseThrow(() -> new FunctionNotFoundException(id));
     }
 
-    private FunctionDetailDto toFunctionDetailDto(Function function) {
-        var functionDetailDto = new FunctionDetailDto();
+    private Implementation findImplementationByIdAndFunctionId(String implementationId, String functionId) {
+        Implementation implementation = implementationRepository.findById(implementationId)
+                .orElseThrow(() -> new ImplementationNotFoundException(implementationId));
 
-        functionDetailDto.setId(function.getId());
-        functionDetailDto.setDefinition(function.getDefinition());
-        functionDetailDto.setImplementation(function.getImplementation());
-        functionDetailDto.setCompilationStatus(function.getCompilationStatus());
-        functionDetailDto.setCreatedBy(function.getCreatedBy());
-        functionDetailDto.setCreatedAt(function.getCreatedAt());
-        functionDetailDto.setUpdatedBy(function.getUpdatedBy());
-        functionDetailDto.setUpdatedAt(function.getUpdatedAt());
+        if (!implementation.getFunctionId().equals(functionId)) {
+            throw new ImplementationNotFoundException(implementationId, functionId);
+        }
 
-        return functionDetailDto;
+        return implementation;
     }
 }

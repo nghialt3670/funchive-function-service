@@ -5,15 +5,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface PipelineService {
-    PipelineDetailDto createPipeline(PipelineCreateDto pipelineCreateDto);
-    
-    PipelineDetailDto getPipelineDetail(String pipelineId);
-    
-    Page<PipelineDetailDto> getPipelinePage(PipelineFilter pipelineFilter, Pageable pageable);
-    
-    PipelineDetailDto updatePipeline(String pipelineId, PipelineUpdateDto pipelineUpdateDto);
-    
-    PipelineDetailDto deletePipeline(String pipelineId);
-    
+    PipelineDetail createPipeline(PipelineCreate pipelineCreate);
+
+    PipelineDetail getPipelineDetail(String pipelineId);
+
+    Page<PipelineDetail> getPipelinePage(PipelineFilter pipelineFilter, Pageable pageable);
+
+    PipelineDetail updatePipeline(String pipelineId, PipelineUpdate pipelineUpdate);
+
+    PipelineDetail deletePipeline(String pipelineId);
+
     void executePipeline(String pipelineId, PipelineExecutionTriggerDto executionTriggerDto);
 } 

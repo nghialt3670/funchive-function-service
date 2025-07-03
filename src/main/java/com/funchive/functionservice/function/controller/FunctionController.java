@@ -3,12 +3,20 @@ package com.funchive.functionservice.function.controller;
 import com.funchive.functionservice.common.model.dto.ResponseBody;
 import com.funchive.functionservice.common.model.dto.ResponsePage;
 import com.funchive.functionservice.function.FunctionService;
-import com.funchive.functionservice.function.SandboxService;
-import com.funchive.functionservice.function.model.dto.*;
+import com.funchive.functionservice.function.model.dto.function.FunctionCreate;
+import com.funchive.functionservice.function.model.dto.function.FunctionDetail;
+import com.funchive.functionservice.function.model.dto.function.FunctionFilter;
+import com.funchive.functionservice.function.model.dto.function.FunctionUpdate;
+import com.funchive.functionservice.function.model.dto.implementation.ImplementationCreate;
+import com.funchive.functionservice.function.model.dto.implementation.ImplementationDetail;
+import com.funchive.functionservice.function.model.dto.implementation.ImplementationFilter;
+import com.funchive.functionservice.function.model.dto.implementation.ImplementationUpdate;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.ObjectUtils;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,92 +28,121 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class FunctionController {
     private final FunctionService functionService;
-    private final SandboxService sandboxService;
 
     @PostMapping
-    public ResponseBody<FunctionDetailDto> createFunction(
-            @RequestParam boolean compile,
-            @RequestBody FunctionCreateDto functionCreateDto
+    public ResponseBody<FunctionDetail> createFunction(
+            @RequestBody @Valid FunctionCreate functionCreate
     ) {
-        var createdFunctionDetailDto = functionService.createFunction(functionCreateDto);
-
-        if (compile) {
-            sandboxService.compileFunction(createdFunctionDetailDto);
-        }
-
-        return ResponseBody.of(createdFunctionDetailDto);
+        FunctionDetail createdFuncDetail = functionService.createFunction(functionCreate);
+        return ResponseBody.of(createdFuncDetail);
     }
 
     @GetMapping("/{functionId}")
-    public ResponseBody<FunctionDetailDto> getFunctionDetail(@PathVariable String functionId) {
-        var functionDetailDto = functionService.getFunctionDetail(functionId);
-        return ResponseBody.of(functionDetailDto);
+    public ResponseBody<FunctionDetail> getFunctionDetail(
+            @PathVariable String functionId
+    ) {
+        FunctionDetail funcDetail = functionService.getFunctionDetail(functionId);
+        return ResponseBody.of(funcDetail);
     }
 
     @GetMapping
-    public ResponseBody<ResponsePage<FunctionDetailDto>> getFunctionPage(
+    public ResponseBody<ResponsePage<FunctionDetail>> getFunctionPage(
             @RequestParam String keyword,
             @RequestParam String language,
-            Pageable pageable
-    ) {
-        var functionFilter = FunctionFilter.builder()
+            Pageable pageable) {
+
+        FunctionFilter funcFilter = FunctionFilter.builder()
                 .keyword(keyword)
                 .language(language)
                 .build();
 
-        var functionPage = functionService.getFunctionPage(functionFilter, pageable);
+        Page<FunctionDetail> funcPage = functionService.getFunctionPage(funcFilter, pageable);
 
-        return ResponseBody.of(ResponsePage.of(functionPage));
+        return ResponseBody.of(ResponsePage.of(funcPage));
     }
 
     @PutMapping("/{functionId}")
-    public ResponseBody<FunctionDetailDto> updateFunction(
+    public ResponseBody<FunctionDetail> updateFunction(
             @PathVariable String functionId,
-            @RequestParam boolean compile,
-            @RequestBody FunctionUpdateDto functionUpdateDto
+            @RequestBody @Valid FunctionUpdate functionUpdate
     ) {
-        var updatedFunctionDetailDto = functionService.updateFunction(functionId, functionUpdateDto);
+        FunctionDetail updatedFuncDetail = functionService.updateFunction(
+                functionId, functionUpdate);
 
-        if (compile) {
-            sandboxService.compileFunction(updatedFunctionDetailDto);
-        }
-
-        return ResponseBody.of(updatedFunctionDetailDto);
+        return ResponseBody.of(updatedFuncDetail);
     }
 
     @DeleteMapping("/{functionId}")
-    public ResponseBody<FunctionDetailDto> deleteFunction(@PathVariable String functionId) {
-        var deletedFunctionDetailDto = functionService.deleteFunction(functionId);
-
-        try {
-            sandboxService.deleteFunctionExecutable(deletedFunctionDetailDto);
-        } catch (Exception e) {
-            log.warn("Failed to delete executable");
-        }
-
-        return ResponseBody.of(deletedFunctionDetailDto);
+    public ResponseBody<ObjectUtils.Null> deleteFunction(@PathVariable String functionId) {
+        functionService.deleteFunction(functionId);
+        return ResponseBody.ok();
     }
 
-    @PostMapping("/{functionId}/compile")
-    public ResponseBody<ObjectUtils.Null> compileFunction(
-            @PathVariable String functionId
-    ) {
-        var functionDetailDto = functionService.getFunctionDetail(functionId);
-
-        sandboxService.compileFunction(functionDetailDto);
-
-        return ResponseBody.of(null);
-    }
-
-    @PostMapping("/{functionId}/execute")
-    public ResponseBody<ObjectUtils.Null> executeFunction(
+    @PostMapping("/{functionId}/implementations")
+    public ResponseBody<ImplementationDetail> createImplementation(
             @PathVariable String functionId,
-            @RequestBody ExecutionTriggerDto executionTriggerDto
+            @RequestBody @Valid ImplementationCreate implementationCreate) {
+
+        ImplementationDetail createdImplDetail = functionService.createImplementation(
+                functionId, implementationCreate);
+
+        return ResponseBody.of(createdImplDetail);
+    }
+
+    @GetMapping("/{functionId}/implementations/{implementationId}")
+    public ResponseBody<ImplementationDetail> getImplementationDetail(
+            @PathVariable String functionId,
+            @PathVariable String implementationId
     ) {
-        var functionDetailDto = functionService.getFunctionDetail(functionId);
+        ImplementationDetail implDetail = functionService.getImplementationDetail(
+                functionId, implementationId);
 
-        sandboxService.executeFunction(functionDetailDto, executionTriggerDto);
+        return ResponseBody.of(implDetail);
+    }
 
-        return ResponseBody.of(null);
+    @GetMapping("/{functionId}/implementations")
+    public ResponseBody<ResponsePage<ImplementationDetail>> getImplementationPage(
+            @PathVariable String functionId,
+            @RequestParam String keyword,
+            Pageable pageable
+    ) {
+        ImplementationFilter implFilter = ImplementationFilter.builder()
+                .keyword(keyword)
+                .build();
+
+        Page<ImplementationDetail> implPage = functionService.getImplementationPage(
+                functionId, implFilter, pageable);
+
+        return ResponseBody.of(ResponsePage.of(implPage));
+    }
+
+    @PutMapping("/{functionId}/implementations/{implementationId}")
+    public ResponseBody<ImplementationDetail> updateImplementation(
+            @PathVariable String functionId,
+            @PathVariable String implementationId,
+            @RequestBody @Valid ImplementationUpdate implementationUpdate
+    ) {
+        ImplementationDetail updatedImplDetail = functionService.updateImplementation(
+                functionId, implementationId, implementationUpdate);
+
+        return ResponseBody.of(updatedImplDetail);
+    }
+
+    @DeleteMapping("/{functionId}/implementations/{implementationId}")
+    public ResponseBody<ObjectUtils.Null> deleteImplementation(
+            @PathVariable String functionId,
+            @PathVariable String implementationId
+    ) {
+        functionService.deleteImplementation(functionId, implementationId);
+        return ResponseBody.ok();
+    }
+
+    @PostMapping("/{functionId}/implementations/{implementationId}/compile")
+    public ResponseBody<ObjectUtils.Null> compileImplementation(
+            @PathVariable String functionId,
+            @PathVariable String implementationId
+    ) {
+        functionService.compileFunction(functionId, implementationId);
+        return ResponseBody.ok();
     }
 }

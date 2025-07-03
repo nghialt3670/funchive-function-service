@@ -17,54 +17,46 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/pipelines")
 @RequiredArgsConstructor
 public class PipelineController {
-    
+
     private final PipelineService pipelineService;
-    
+
     @PostMapping
-    public ResponseBody<PipelineDetailDto> createPipeline(
-            @RequestBody PipelineCreateDto pipelineCreateDto
-    ) {
-        var createdPipelineDetailDto = pipelineService.createPipeline(pipelineCreateDto);
-        return ResponseBody.of(createdPipelineDetailDto);
+    public ResponseBody<PipelineDetail> createPipeline(
+            @RequestBody PipelineCreate pipelineCreate) {
+        return ResponseBody.of(pipelineService.createPipeline(pipelineCreate));
     }
-    
+
     @GetMapping("/{pipelineId}")
-    public ResponseBody<PipelineDetailDto> getPipelineDetail(@PathVariable String pipelineId) {
-        var pipelineDetailDto = pipelineService.getPipelineDetail(pipelineId);
-        return ResponseBody.of(pipelineDetailDto);
+    public ResponseBody<PipelineDetail> getPipelineDetail(@PathVariable String pipelineId) {
+        return ResponseBody.of(pipelineService.getPipelineDetail(pipelineId));
     }
-    
+
     @GetMapping
-    public ResponseBody<ResponsePage<PipelineDetailDto>> getPipelinePage(
+    public ResponseBody<ResponsePage<PipelineDetail>> getPipelinePage(
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String createdBy,
             Pageable pageable
     ) {
-        var pipelineFilter = PipelineFilter.builder()
+        PipelineFilter pipelineFilter = PipelineFilter.builder()
                 .keyword(keyword)
-                .createdBy(createdBy)
                 .build();
-        
-        var pipelinePage = pipelineService.getPipelinePage(pipelineFilter, pageable);
-        
-        return ResponseBody.of(ResponsePage.of(pipelinePage));
+
+        return ResponseBody.of(ResponsePage.of(pipelineService.getPipelinePage(pipelineFilter, pageable)));
     }
-    
+
     @PutMapping("/{pipelineId}")
-    public ResponseBody<PipelineDetailDto> updatePipeline(
+    public ResponseBody<PipelineDetail> updatePipeline(
             @PathVariable String pipelineId,
-            @RequestBody PipelineUpdateDto pipelineUpdateDto
+            @RequestBody PipelineUpdate pipelineUpdate
     ) {
-        var updatedPipelineDetailDto = pipelineService.updatePipeline(pipelineId, pipelineUpdateDto);
+        var updatedPipelineDetailDto = pipelineService.updatePipeline(pipelineId, pipelineUpdate);
         return ResponseBody.of(updatedPipelineDetailDto);
     }
-    
+
     @DeleteMapping("/{pipelineId}")
-    public ResponseBody<PipelineDetailDto> deletePipeline(@PathVariable String pipelineId) {
-        var deletedPipelineDetailDto = pipelineService.deletePipeline(pipelineId);
-        return ResponseBody.of(deletedPipelineDetailDto);
+    public ResponseBody<PipelineDetail> deletePipeline(@PathVariable String pipelineId) {
+        return ResponseBody.of(pipelineService.deletePipeline(pipelineId));
     }
-    
+
     @PostMapping("/{pipelineId}/execute")
     public ResponseBody<ObjectUtils.Null> executePipeline(
             @PathVariable String pipelineId,

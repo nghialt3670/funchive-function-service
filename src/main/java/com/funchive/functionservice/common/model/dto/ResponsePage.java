@@ -17,7 +17,7 @@ public class ResponsePage<D> {
     public static <D> ResponsePage<D> of(Page<D> page) {
         return ResponsePage.<D>builder()
                 .items(page.getContent())
-                .page(page.getNumber())
+                .page(page.getNumber() + 1) // Convert 0-based to 1-based for response
                 .size(page.getSize())
                 .total(page.getTotalElements())
                 .build();

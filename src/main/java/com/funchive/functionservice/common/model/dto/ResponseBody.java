@@ -1,6 +1,5 @@
 package com.funchive.functionservice.common.model.dto;
 
-import com.funchive.functionservice.common.exception.Error;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -12,22 +11,6 @@ public class ResponseBody<T> implements Serializable {
     private String code;
     private String message;
     private T data;
-
-    public static <T> ResponseBody<T> of(Error error) {
-        return ResponseBody.<T>builder()
-                .code(error.getCode())
-                .message(error.getMessage())
-                .data(null)
-                .build();
-    }
-
-    public static ResponseBody<String> of(Error error, Exception exception) {
-        return ResponseBody.<String>builder()
-                .code(error.getCode())
-                .message(error.getMessage())
-                .data(exception.getMessage())
-                .build();
-    }
 
     public static <T> ResponseBody<T> of(String code, String message) {
         return ResponseBody.<T>builder()
@@ -58,6 +41,14 @@ public class ResponseBody<T> implements Serializable {
                 .code("SUCCESS")
                 .message("Success")
                 .data(data)
+                .build();
+    }
+
+    public static <T> ResponseBody<T> ok() {
+        return ResponseBody.<T>builder()
+                .code("SUCCESS")
+                .message("Success")
+                .data(null)
                 .build();
     }
 }

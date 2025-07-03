@@ -1,6 +1,6 @@
 package com.funchive.functionservice.pipeline.model.dto;
 
-import com.funchive.functionservice.function.model.document.Value;
+import com.funchive.functionservice.function.model.common.value.Value;
 import lombok.Data;
 
 import java.util.Map;

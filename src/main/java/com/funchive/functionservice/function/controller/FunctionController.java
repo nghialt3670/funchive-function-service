@@ -138,11 +138,25 @@ public class FunctionController {
     }
 
     @PostMapping("/{functionId}/implementations/{implementationId}/compile")
-    public ResponseBody<ObjectUtils.Null> compileImplementation(
+    public ResponseBody<ImplementationDetail> compileImplementation(
             @PathVariable String functionId,
             @PathVariable String implementationId
     ) {
-        functionService.compileFunction(functionId, implementationId);
-        return ResponseBody.ok();
+        ImplementationDetail compiledFuncDetail = functionService.compileFunction(
+                functionId, implementationId);
+
+        return ResponseBody.of(compiledFuncDetail);
+    }
+
+    @PostMapping("/{functionId}/implementations/{implementationId}/execute")
+    public ResponseBody<ImplementationDetail> executeImplementation(
+            @PathVariable String functionId,
+            @PathVariable String implementationId,
+            @RequestParam String inputValueId
+    ) {
+        ImplementationDetail executedFuncDetail = functionService.executeFunction(
+                functionId, implementationId, inputValueId);
+                
+        return ResponseBody.of(executedFuncDetail);
     }
 }

@@ -1,6 +1,5 @@
 package com.funchive.functionservice.function;
 
-import com.funchive.functionservice.function.model.common.value.Value;
 import com.funchive.functionservice.function.model.dto.function.*;
 import com.funchive.functionservice.function.model.dto.implementation.ImplementationCreate;
 import com.funchive.functionservice.function.model.dto.implementation.ImplementationDetail;
@@ -30,7 +29,7 @@ public interface FunctionService {
 
     void deleteImplementation(String functionId, String implementationId);
 
-    void compileFunction(String functionId, String implementationId);
+    ImplementationDetail compileFunction(String functionId, String implementationId);
 
-    void executeFunction(String functionId, String implementationId, String inputValueId);
+    ImplementationDetail executeFunction(String functionId, String implementationId, String inputValueId);
 }

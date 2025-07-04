@@ -17,7 +17,6 @@ public class Pipeline {
     private List<Node> nodes;
     private List<Connection> connections;
     private ExecutionConfig executionConfig;
-    private ExecutionStatus executionStatus;
 
     @CreatedBy
     private String createdBy;

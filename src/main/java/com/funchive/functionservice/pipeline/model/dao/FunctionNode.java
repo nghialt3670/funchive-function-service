@@ -8,4 +8,5 @@ import lombok.EqualsAndHashCode;
 public class FunctionNode extends Node {
     private String functionId;
     private String implementationId;
+    private ExecutionStatus executionStatus = ExecutionStatus.IDLE;
 } 

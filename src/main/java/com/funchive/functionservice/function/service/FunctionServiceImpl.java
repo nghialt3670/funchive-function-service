@@ -8,9 +8,11 @@ import com.funchive.functionservice.function.model.dto.function.*;
 import com.funchive.functionservice.function.model.dto.implementation.*;
 import com.funchive.functionservice.function.model.dto.message.CompilationRequestMessage;
 import com.funchive.functionservice.function.model.dto.message.ExecutionRequestMessage;
+import com.funchive.functionservice.function.model.dto.type.TypeUpdate;
 import com.funchive.functionservice.function.repository.FunctionRepository;
 import com.funchive.functionservice.function.repository.ImplementationRepository;
-import com.funchive.functionservice.pipeline.model.dao.ExecutionStatus;
+import com.funchive.functionservice.function.model.common.type.*;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.modelmapper.ModelMapper;
@@ -197,5 +199,12 @@ public class FunctionServiceImpl implements FunctionService {
 
     private ImplementationDetail toImplementationDetail(Implementation implementation) {
         return modelMapper.map(implementation, ImplementationDetail.class);
+    }
+
+    @PostConstruct
+    public void configureModelMapper() {
+        // Configure model mapper to ignore the name field in TypeUpdate
+        modelMapper.typeMap(TypeUpdate.class, Type.class)
+                .addMappings(mapper -> mapper.skip(Type::setName));
     }
 }

@@ -7,6 +7,10 @@ import lombok.Setter;
 @Getter
 @Setter
 public final class NumberValue extends Value<Double> {
+    public NumberValue() {
+        super(EType.NUMBER.name());
+    }
+
     public NumberValue(Double data) {
         super(EType.NUMBER.name(), data);
     }

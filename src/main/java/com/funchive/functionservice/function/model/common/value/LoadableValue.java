@@ -8,6 +8,10 @@ import lombok.Setter;
 public class LoadableValue<T> extends Value<T>{
     protected String id;
 
+    public LoadableValue(String type) {
+        super(type);
+    }
+
     public LoadableValue(String type, T data) {
         super(type, data);
     }

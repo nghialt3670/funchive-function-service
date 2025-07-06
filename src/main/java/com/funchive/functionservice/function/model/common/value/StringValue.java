@@ -7,6 +7,10 @@ import lombok.Setter;
 @Getter
 @Setter
 public final class StringValue extends LoadableValue<String> {
+    public StringValue() {
+        super(EType.STRING.name());
+    }
+
     public StringValue(String data) {
         super(EType.STRING.name(), data);
     }

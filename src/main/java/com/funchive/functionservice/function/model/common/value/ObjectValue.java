@@ -2,6 +2,7 @@ package com.funchive.functionservice.function.model.common.value;
 
 import com.funchive.functionservice.function.model.common.type.EType;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Map;
@@ -9,6 +10,10 @@ import java.util.Map;
 @Getter
 @Setter
 public final class ObjectValue extends LoadableValue<Map<String, Value<?>>> {
+    public ObjectValue() {
+        super(EType.OBJECT.name());
+    }
+
     public ObjectValue(Map<String, Value<?>> data) {
         super(EType.OBJECT.name(), data);
     }

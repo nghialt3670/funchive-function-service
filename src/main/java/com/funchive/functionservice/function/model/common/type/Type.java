@@ -8,6 +8,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "name",
+        visible = true
+)
 @JsonSubTypes({
         @JsonSubTypes.Type(value = ArrayType.class, name = "ARRAY"),
         @JsonSubTypes.Type(value = BooleanType.class, name = "BOOLEAN"),
@@ -16,11 +21,6 @@ import lombok.NoArgsConstructor;
         @JsonSubTypes.Type(value = ObjectType.class, name = "OBJECT"),
         @JsonSubTypes.Type(value = StringType.class, name = "STRING"),
 })
-@JsonTypeInfo(
-        use = JsonTypeInfo.Id.NAME,
-        property = "name",
-        visible = true
-)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

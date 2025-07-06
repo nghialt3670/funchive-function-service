@@ -59,7 +59,9 @@ public class FunctionServiceImpl implements FunctionService {
     @Transactional
     public FunctionDetail updateFunction(String functionId, @NotNull FunctionUpdate functionUpdate) {
         Function function = findFunctionById(functionId);
-        return toFunctionDetail(function);
+        modelMapper.map(functionUpdate, function);
+        Function savedFunction = functionRepository.save(function);
+        return toFunctionDetail(savedFunction);
     }
 
     @Override

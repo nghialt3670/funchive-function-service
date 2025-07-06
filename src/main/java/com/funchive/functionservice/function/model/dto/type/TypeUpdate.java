@@ -20,7 +20,7 @@ import lombok.Data;
 public class TypeUpdate {
     @JsonIgnore(false)
     private String name;
-    
     private String description;
     private Value<?> defaultValue;
+    private boolean useDefaultValue;
 }

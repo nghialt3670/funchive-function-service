@@ -29,6 +29,7 @@ public abstract class Type {
     private String name;
     private String description;
     private Value<?> defaultValue;
+    private boolean useDefaultValue;
 
     public Type(String name) {
         this.name = name;

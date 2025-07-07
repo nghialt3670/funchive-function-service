@@ -29,7 +29,7 @@ public abstract class TypeMapper {
         }
 
         if (typeUpdate.getDefaultValue() != null) {
-            if (!typeUpdate.getDefaultValue().getTypeName().equals(type.getDefaultValue().getTypeName())) {
+            if (type.getDefaultValue() != null && !typeUpdate.getDefaultValue().getTypeName().equals(type.getDefaultValue().getTypeName())) {
                 throw new DefaultValueTypeNotMatchExecption(type.getDefaultValue().getTypeName(), typeUpdate.getDefaultValue().getTypeName());
             }
 

@@ -1,5 +1,6 @@
-package com.funchive.functionservice.function.model.dao.implementation;
+package com.funchive.functionservice.function.model.dao.implementation.java;
 
+import com.funchive.functionservice.function.model.dao.implementation.CompilableImplementation;
 import jakarta.annotation.Nonnull;
 import lombok.*;
 
@@ -11,17 +12,10 @@ import java.util.List;
 public class JavaImplementation extends CompilableImplementation {
     @Nonnull
     private String version;
+    @Nonnull
     private List<String> imports = new ArrayList<>();
-    private List<Dependency> dependencies = new ArrayList<>();
+    @Nonnull
+    private List<JavaDependency> dependencies = new ArrayList<>();
     @Nonnull
     private String functionBody;
-
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Dependency {
-        private String groupId;
-        private String artifactId;
-        private String version;
-    }
 }

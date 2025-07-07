@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class Type {
+public class Type {
     @JsonIgnore
     private String name;
     private String description;

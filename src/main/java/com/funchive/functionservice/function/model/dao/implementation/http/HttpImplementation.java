@@ -1,5 +1,6 @@
-package com.funchive.functionservice.function.model.dao.implementation;
+package com.funchive.functionservice.function.model.dao.implementation.http;
 
+import com.funchive.functionservice.function.model.dao.implementation.Implementation;
 import jakarta.annotation.Nonnull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

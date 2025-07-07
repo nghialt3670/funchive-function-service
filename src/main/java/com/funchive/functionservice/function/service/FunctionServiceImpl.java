@@ -8,14 +8,12 @@ import com.funchive.functionservice.function.model.dto.function.*;
 import com.funchive.functionservice.function.model.dto.implementation.*;
 import com.funchive.functionservice.function.model.dto.message.CompilationRequestMessage;
 import com.funchive.functionservice.function.model.dto.message.ExecutionRequestMessage;
-import com.funchive.functionservice.function.model.dto.type.TypeUpdate;
+import com.funchive.functionservice.function.model.mapper.FunctionMapper;
+import com.funchive.functionservice.function.model.mapper.ImplementationMapper;
 import com.funchive.functionservice.function.repository.FunctionRepository;
 import com.funchive.functionservice.function.repository.ImplementationRepository;
-import com.funchive.functionservice.function.model.common.type.*;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -29,54 +27,55 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FunctionServiceImpl implements FunctionService {
 
-    private final FunctionRepository functionRepository;
-    private final ImplementationRepository implementationRepository;
+    private final FunctionRepository funcRepository;
+    private final ImplementationRepository implRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    private final ModelMapper modelMapper;
+    private final FunctionMapper funcMapper;
+    private final ImplementationMapper implMapper;
 
     @Override
     @Transactional
     public FunctionDetail createFunction(@NotNull FunctionCreate functionCreate) {
-        Function function = modelMapper.map(functionCreate, Function.class);
-        Function savedFunction = functionRepository.save(function);
-        return toFunctionDetail(savedFunction);
+        Function func = funcMapper.toFunction(functionCreate);
+        Function savedFunc = funcRepository.save(func);
+        return toFunctionDetail(savedFunc);
     }
 
     @Override
     @Transactional(readOnly = true)
     public FunctionDetail getFunctionDetail(String functionId) {
-        Function function = findFunctionById(functionId);
-        return toFunctionDetail(function);
+        Function func = findFunctionById(functionId);
+        return toFunctionDetail(func);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<FunctionDetail> getFunctionPage(FunctionFilter functionFilter, Pageable pageable) {
         // TODO: Implement filter criteria using QueryDSL or Criteria API
-        Page<Function> functionPage = functionRepository.findAll(pageable);
-        return functionPage.map(this::toFunctionDetail);
+        Page<Function> funcPage = funcRepository.findAll(pageable);
+        return funcPage.map(this::toFunctionDetail);
     }
 
     @Override
     @Transactional
     public FunctionDetail updateFunction(String functionId, @NotNull FunctionUpdate functionUpdate) {
-        Function function = findFunctionById(functionId);
-        modelMapper.map(functionUpdate, function);
-        Function savedFunction = functionRepository.save(function);
-        return toFunctionDetail(savedFunction);
+        Function func = findFunctionById(functionId);
+        funcMapper.updateFunction(functionUpdate, func);
+        Function savedFunc = funcRepository.save(func);
+        return toFunctionDetail(savedFunc);
     }
 
     @Override
     @Transactional
     public void deleteFunction(String functionId) {
-        functionRepository.delete(findFunctionById(functionId));
+        funcRepository.delete(findFunctionById(functionId));
     }
 
     @Override
     @Transactional
     public ImplementationDetail createImplementation(String functionId, ImplementationCreate implementationCreate) {
-        Implementation impl = modelMapper.map(implementationCreate, Implementation.class);
-        Implementation savedImpl = implementationRepository.save(impl);
+        Implementation impl = implMapper.toImplementation(implementationCreate);
+        Implementation savedImpl = implRepository.save(impl);
         return toImplementationDetail(savedImpl);
     }
 
@@ -95,7 +94,7 @@ public class FunctionServiceImpl implements FunctionService {
             Pageable pageable
     ) {
         // TODO: Implement filter criteria using QueryDSL or Criteria API
-        Page<Implementation> implPage = implementationRepository.findAll(pageable);
+        Page<Implementation> implPage = implRepository.findAll(pageable);
         return implPage.map(this::toImplementationDetail);
     }
 
@@ -108,9 +107,8 @@ public class FunctionServiceImpl implements FunctionService {
             throw new ImplementationNotMatchException(impl.getType().name(), implementationUpdate.getType());
         }
 
-        modelMapper.map(implementationUpdate, impl);
-        Implementation savedImpl = implementationRepository.save(impl);
-
+        implMapper.updateImplementation(implementationUpdate, impl);
+        Implementation savedImpl = implRepository.save(impl);
         return toImplementationDetail(savedImpl);
     }
 
@@ -118,7 +116,7 @@ public class FunctionServiceImpl implements FunctionService {
     @Transactional
     public void deleteImplementation(String functionId, String implementationId) {
         Implementation impl = findImplementationByIdAndFunctionId(implementationId, functionId);
-        implementationRepository.delete(impl);
+        implRepository.delete(impl);
     }
 
     @Override
@@ -140,7 +138,7 @@ public class FunctionServiceImpl implements FunctionService {
             kafkaTemplate.send("function.compile.request", message);
 
             compilableImpl.setCompilationStatus(CompilationStatus.PENDING);
-            Implementation savedImpl = implementationRepository.save(compilableImpl);
+            Implementation savedImpl = implRepository.save(compilableImpl);
 
             return toImplementationDetail(savedImpl);
         } else {
@@ -172,12 +170,12 @@ public class FunctionServiceImpl implements FunctionService {
     }
 
     private Function findFunctionById(String functionId) {
-        return functionRepository.findById(functionId)
+        return funcRepository.findById(functionId)
                 .orElseThrow(() -> new FunctionNotFoundException(functionId));
     }
 
     private Implementation findImplementationByIdAndFunctionId(String implementationId, String functionId) {
-        Implementation implementation = implementationRepository.findById(implementationId)
+        Implementation implementation = implRepository.findById(implementationId)
                 .orElseThrow(() -> new ImplementationNotFoundException(implementationId));
 
         if (!implementation.getFunctionId().equals(functionId)) {
@@ -188,23 +186,11 @@ public class FunctionServiceImpl implements FunctionService {
     }
 
     private FunctionDetail toFunctionDetail(Function function) {
-        FunctionDetail functionDetail = modelMapper.map(function, FunctionDetail.class);
-        List<Implementation> implementations = implementationRepository.findAllByFunctionId(function.getId());
-        functionDetail.setImplementations(implementations.stream()
-                .map(implementation -> modelMapper.map(implementation, ImplementationBasic.class))
-                .toList());
-
-        return functionDetail;
+        List<Implementation> impls = implRepository.findAllByFunctionId(function.getId());
+        return funcMapper.toFunctionDetail(function, impls);
     }
 
     private ImplementationDetail toImplementationDetail(Implementation implementation) {
-        return modelMapper.map(implementation, ImplementationDetail.class);
-    }
-
-    @PostConstruct
-    public void configureModelMapper() {
-        // Configure model mapper to ignore the name field in TypeUpdate
-        modelMapper.typeMap(TypeUpdate.class, Type.class)
-                .addMappings(mapper -> mapper.skip(Type::setName));
+        return implMapper.toImplementationDetail(implementation);
     }
 }

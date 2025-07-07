@@ -5,7 +5,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.funchive.functionservice.function.model.dto.implementation.http.HttpImplementationUpdate;
 import com.funchive.functionservice.function.model.dto.implementation.java.JavaImplementationUpdate;
 import com.funchive.functionservice.function.model.dto.implementation.python.PythonImplementationUpdate;
+import jakarta.annotation.Nonnull;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -18,8 +20,12 @@ import lombok.Data;
         @JsonSubTypes.Type(value = HttpImplementationUpdate.class, name = "HTTP")
 })
 @Data
-public abstract class ImplementationUpdate {
+@NoArgsConstructor
+public class ImplementationUpdate {
+    @Nonnull
     protected String type;
+    @Nonnull
     protected String name;
+    @Nonnull
     protected String description;
 } 

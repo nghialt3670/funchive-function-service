@@ -13,8 +13,11 @@ import lombok.Data;
 )
 @JsonSubTypes({
         @JsonSubTypes.Type(value = ArrayTypeUpdate.class, name = "ARRAY"),
+        @JsonSubTypes.Type(value = BooleanTypeUpdate.class, name = "BOOLEAN"),
+        @JsonSubTypes.Type(value = FileTypeUpdate.class, name = "FILE"),
+        @JsonSubTypes.Type(value = NumberTypeUpdate.class, name = "NUMBER"),
         @JsonSubTypes.Type(value = ObjectTypeUpdate.class, name = "OBJECT"),
-        @JsonSubTypes.Type(value = TypeUpdate.class, names = {"BOOLEAN", "NUMBER", "STRING", "FILE"})
+        @JsonSubTypes.Type(value = StringTypeUpdate.class, name = "STRING"),
 })
 @Data
 public class TypeUpdate {

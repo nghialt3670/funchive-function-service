@@ -8,7 +8,6 @@ import java.util.Map;
 
 @Getter
 @Setter
-@NoArgsConstructor
 public final class ObjectType extends Type {
     private Map<String, Type> schema;
 

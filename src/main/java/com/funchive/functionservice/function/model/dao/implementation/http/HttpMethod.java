@@ -1,4 +1,4 @@
-package com.funchive.functionservice.function.model.dao.implementation;
+package com.funchive.functionservice.function.model.dao.implementation.http;
 
 public enum HttpMethod {
     GET,

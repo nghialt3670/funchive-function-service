@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 )
 @JsonSubTypes({
         @JsonSubTypes.Type(value = ArrayValue.class, name = "ARRAY"),
-        @JsonSubTypes.Type(value = ArrayValue.class, name = "BOOLEAN"),
+        @JsonSubTypes.Type(value = BooleanValue.class, name = "BOOLEAN"),
         @JsonSubTypes.Type(value = FileValue.class, name = "FILE"),
         @JsonSubTypes.Type(value = NumberValue.class, name = "NUMBER"),
         @JsonSubTypes.Type(value = ObjectValue.class, name = "OBJECT"),
@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class Value<T> {
+public class Value<T> {
     @JsonIgnore
     private String typeName;
     private T data;

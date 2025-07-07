@@ -20,7 +20,7 @@ import java.time.Instant;
         @JsonSubTypes.Type(value = HttpImplementationDetail.class, name = "HTTP")
 })
 @Data
-public abstract class ImplementationDetail {
+public class ImplementationDetail {
     protected String id;
     protected String type;
     protected String name;

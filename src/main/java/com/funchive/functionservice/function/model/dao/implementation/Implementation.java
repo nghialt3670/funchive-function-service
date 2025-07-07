@@ -1,5 +1,6 @@
 package com.funchive.functionservice.function.model.dao.implementation;
 
+import jakarta.annotation.Nonnull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,15 +13,18 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document("implementations")
-public abstract class Implementation {
+public class Implementation {
     @Id
     private String id;
+    @Nonnull
     private String functionId;
+    @Nonnull
     protected ImplementationType type;
+    @Nonnull
     protected String name;
+    @Nonnull
     protected String description;
     protected ExecutionConfig executionConfig;
-
     @CreatedBy
     private String createdBy;
     @CreatedDate

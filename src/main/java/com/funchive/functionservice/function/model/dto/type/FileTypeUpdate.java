@@ -5,6 +5,5 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class ArrayTypeUpdate extends TypeUpdate {
-    private TypeUpdate elementType;
-} 
+public class FileTypeUpdate extends TypeUpdate{
+}
